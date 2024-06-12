@@ -1,0 +1,296 @@
+<html>
+<head>
+<title>AVL_tree.h</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #8c8c8c; font-style: italic;}
+.s1 { color: #080808;}
+.s2 { color: #9e880d;}
+.s3 { color: #067d17;}
+.s4 { color: #0033b3;}
+.s5 { color: #1750eb;}
+.s6 { color: #0037a6;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+AVL_tree.h</font>
+</center></td></tr></table>
+<pre><span class="s0">//</span>
+<span class="s0">// Created by Hao Ji on 2024/06/03.</span>
+<span class="s0">//</span>
+
+<span class="s2">#ifndef </span><span class="s1">TUTORING_CODE_AVL_TREE_H</span>
+<span class="s2">#define </span><span class="s1">TUTORING_CODE_AVL_TREE_H</span>
+
+<span class="s0">// C program to insert/delete a node in AVL tree</span>
+<span class="s2">#include</span><span class="s3">&lt;stdio.h&gt;</span>
+<span class="s2">#include</span><span class="s3">&lt;stdlib.h&gt;</span>
+
+<span class="s0">// An AVL tree node</span>
+<span class="s4">struct </span><span class="s1">Node{</span>
+    <span class="s4">int </span><span class="s1">key;</span>
+    <span class="s4">struct </span><span class="s1">Node *left;</span>
+    <span class="s4">struct </span><span class="s1">Node *right;</span>
+    <span class="s4">int </span><span class="s1">height;</span>
+<span class="s1">};</span>
+
+<span class="s0">// A utility function to get the height of the tree</span>
+<span class="s4">int </span><span class="s1">height(</span><span class="s4">struct </span><span class="s1">Node *N){</span>
+    <span class="s4">if </span><span class="s1">(N == NULL) </span><span class="s4">return </span><span class="s5">0</span><span class="s1">;</span>
+    <span class="s4">return </span><span class="s1">N-&gt;height;</span>
+<span class="s1">}</span>
+
+<span class="s0">// A utility function to get maximum of two integers</span>
+<span class="s4">int </span><span class="s1">max(</span><span class="s4">int </span><span class="s1">a, </span><span class="s4">int </span><span class="s1">b){</span><span class="s4">return </span><span class="s1">(a &gt; b)? a : b;}</span>
+
+<span class="s0">/* Helper function that allocates a new node with the given key and NULL left and right pointers. */</span>
+<span class="s4">struct </span><span class="s1">Node* newNode(</span><span class="s4">int </span><span class="s1">key){</span>
+    <span class="s4">struct </span><span class="s1">Node* node = (</span><span class="s4">struct </span><span class="s1">Node*)malloc(</span><span class="s4">sizeof</span><span class="s1">(</span><span class="s4">struct </span><span class="s1">Node));</span>
+    <span class="s1">node-&gt;key = key;</span>
+    <span class="s1">node-&gt;left = NULL;</span>
+    <span class="s1">node-&gt;right = NULL;</span>
+    <span class="s1">node-&gt;height = </span><span class="s5">1</span><span class="s1">; </span><span class="s0">// new node is initially added at leaf</span>
+    <span class="s4">return</span><span class="s1">(node);</span>
+<span class="s1">}</span>
+
+<span class="s0">// A utility function to right rotate subtree rooted with y</span>
+<span class="s0">// See the diagram given above.</span>
+<span class="s4">struct </span><span class="s1">Node *rightRotate(</span><span class="s4">struct </span><span class="s1">Node *y){</span>
+    <span class="s4">struct </span><span class="s1">Node *x = y-&gt;left;</span>
+    <span class="s4">struct </span><span class="s1">Node *T2 = x-&gt;right;</span>
+
+    <span class="s0">// Perform rotation</span>
+    <span class="s1">x-&gt;right = y;</span>
+    <span class="s1">y-&gt;left = T2;</span>
+
+    <span class="s0">// Update heights</span>
+    <span class="s1">y-&gt;height = max(height(y-&gt;left),height(y-&gt;right)) + </span><span class="s5">1</span><span class="s1">;</span>
+    <span class="s1">x-&gt;height = max(height(x-&gt;left),height(x-&gt;right)) + </span><span class="s5">1</span><span class="s1">;</span>
+
+    <span class="s0">// Return new root</span>
+    <span class="s4">return </span><span class="s1">x;</span>
+<span class="s1">}</span>
+
+<span class="s0">// A utility function to left rotate subtree rooted with x</span>
+<span class="s0">// See the diagram given above.</span>
+<span class="s4">struct </span><span class="s1">Node *leftRotate(</span><span class="s4">struct </span><span class="s1">Node *x){</span>
+    <span class="s4">struct </span><span class="s1">Node *y = x-&gt;right;</span>
+    <span class="s4">struct </span><span class="s1">Node *T2 = y-&gt;left;</span>
+
+    <span class="s0">// Perform rotation</span>
+    <span class="s1">y-&gt;left = x;</span>
+    <span class="s1">x-&gt;right = T2;</span>
+
+    <span class="s0">// Update heights</span>
+    <span class="s1">x-&gt;height = max(height(x-&gt;left),height(x-&gt;right)) + </span><span class="s5">1</span><span class="s1">;</span>
+    <span class="s1">y-&gt;height = max(height(y-&gt;left),height(y-&gt;right)) + </span><span class="s5">1</span><span class="s1">;</span>
+
+    <span class="s0">// Return new root</span>
+    <span class="s4">return </span><span class="s1">y;</span>
+<span class="s1">}</span>
+
+<span class="s0">// Get Balance factor of node N</span>
+<span class="s4">int </span><span class="s1">getBalance(</span><span class="s4">struct </span><span class="s1">Node *N){</span>
+    <span class="s4">if </span><span class="s1">(N == NULL) </span><span class="s4">return </span><span class="s5">0</span><span class="s1">;</span>
+    <span class="s4">return </span><span class="s1">height(N-&gt;left) - height(N-&gt;right);</span>
+<span class="s1">}</span>
+
+<span class="s0">// Recursive function to insert a key in the subtree rooted</span>
+<span class="s0">// with node and returns the new root of the subtree.</span>
+<span class="s4">struct </span><span class="s1">Node* insert(</span><span class="s4">struct </span><span class="s1">Node* node, </span><span class="s4">int </span><span class="s1">key){</span>
+    <span class="s0">/* 1. Perform the normal BST insertion */</span>
+    <span class="s4">if </span><span class="s1">(node == NULL)</span><span class="s4">return</span><span class="s1">(newNode(key));</span>
+
+    <span class="s4">if </span><span class="s1">(key &lt; node-&gt;key) node-&gt;left = insert(node-&gt;left, key);</span>
+    <span class="s4">else if </span><span class="s1">(key &gt; node-&gt;key) node-&gt;right = insert(node-&gt;right, key);</span>
+    <span class="s0">// Equal keys are not allowed in BST</span>
+    <span class="s4">else return </span><span class="s1">node;</span>
+
+    <span class="s0">/* 2. Update height of this ancestor node */</span>
+    <span class="s1">node-&gt;height = </span><span class="s5">1 </span><span class="s1">+ max(height(node-&gt;left),height(node-&gt;right));</span>
+
+    <span class="s0">/* 3. Get the balance factor of this ancestor node to check whether this node became unbalanced */</span>
+    <span class="s4">int </span><span class="s1">balance = getBalance(node);</span>
+
+    <span class="s0">// If this node becomes unbalanced, then there are 4 cases</span>
+
+    <span class="s0">// Left Left Case</span>
+    <span class="s4">if </span><span class="s1">(balance &gt; </span><span class="s5">1 </span><span class="s1">&amp;&amp; key &lt; node-&gt;left-&gt;key)</span>
+        <span class="s4">return </span><span class="s1">rightRotate(node);</span>
+
+    <span class="s0">// Right Right Case</span>
+    <span class="s4">if </span><span class="s1">(balance &lt; -</span><span class="s5">1 </span><span class="s1">&amp;&amp; key &gt; node-&gt;right-&gt;key)</span>
+        <span class="s4">return </span><span class="s1">leftRotate(node);</span>
+
+    <span class="s0">// Left Right Case</span>
+    <span class="s4">if </span><span class="s1">(balance &gt; </span><span class="s5">1 </span><span class="s1">&amp;&amp; key &gt; node-&gt;left-&gt;key){</span>
+        <span class="s1">node-&gt;left = leftRotate(node-&gt;left);</span>
+        <span class="s4">return </span><span class="s1">rightRotate(node);</span>
+    <span class="s1">}</span>
+
+    <span class="s0">// Right Left Case</span>
+    <span class="s4">if </span><span class="s1">(balance &lt; -</span><span class="s5">1 </span><span class="s1">&amp;&amp; key &lt; node-&gt;right-&gt;key){</span>
+        <span class="s1">node-&gt;right = rightRotate(node-&gt;right);</span>
+        <span class="s4">return </span><span class="s1">leftRotate(node);</span>
+    <span class="s1">}</span>
+
+    <span class="s0">/* return the (unchanged) node pointer */</span>
+    <span class="s4">return </span><span class="s1">node;</span>
+<span class="s1">}</span>
+
+<span class="s0">/* Given a non-empty binary search tree, return the node with minimum key value found in that tree. 
+Note that the entire tree does not need to be searched. */</span>
+<span class="s4">struct </span><span class="s1">Node * minValueNode(</span><span class="s4">struct </span><span class="s1">Node* node){</span>
+    <span class="s4">struct </span><span class="s1">Node* current = node;</span>
+
+    <span class="s0">/* loop down to find the leftmost leaf */</span>
+    <span class="s4">while </span><span class="s1">(current-&gt;left != NULL)</span>
+        <span class="s1">current = current-&gt;left;</span>
+
+    <span class="s4">return </span><span class="s1">current;</span>
+<span class="s1">}</span>
+
+<span class="s0">// Recursive function to delete a node with given key from subtree with given root. It returns root of the modified subtree.</span>
+<span class="s4">struct </span><span class="s1">Node* deleteNode(</span><span class="s4">struct </span><span class="s1">Node* root, </span><span class="s4">int </span><span class="s1">key){</span>
+    <span class="s0">// STEP 1: PERFORM STANDARD BST DELETE</span>
+
+    <span class="s4">if </span><span class="s1">(root == NULL)</span>
+        <span class="s4">return </span><span class="s1">root;</span>
+
+    <span class="s0">// If the key to be deleted is smaller than the root's key, then it lies in left subtree</span>
+    <span class="s4">if </span><span class="s1">( key &lt; root-&gt;key )</span>
+        <span class="s1">root-&gt;left = deleteNode(root-&gt;left, key);</span>
+
+    <span class="s0">// If the key to be deleted is greater than the root's key, then it lies in right subtree</span>
+    <span class="s4">else if</span><span class="s1">( key &gt; root-&gt;key )</span>
+        <span class="s1">root-&gt;right = deleteNode(root-&gt;right, key);</span>
+
+        <span class="s0">// if key is same as root's key, then This is</span>
+        <span class="s0">// the node to be deleted</span>
+    <span class="s4">else</span><span class="s1">{</span>
+        <span class="s0">// node with only one child or no child</span>
+        <span class="s4">if</span><span class="s1">( (root-&gt;left == NULL) || (root-&gt;right == NULL) ){</span>
+            <span class="s4">struct </span><span class="s1">Node *temp = root-&gt;left ? root-&gt;left :  root-&gt;right;</span>
+
+            <span class="s0">// No child case</span>
+            <span class="s4">if </span><span class="s1">(temp == NULL){</span>
+                <span class="s1">temp = root;</span>
+                <span class="s1">root = NULL;</span>
+            <span class="s1">}</span>
+            <span class="s4">else </span><span class="s0">// One child case</span>
+                <span class="s1">*root = *temp; </span><span class="s0">// Copy the contents of</span>
+            <span class="s0">// the non-empty child</span>
+            <span class="s1">free(temp);</span>
+        <span class="s1">}</span>
+        <span class="s4">else</span><span class="s1">{</span>
+            <span class="s0">// node with two children: Get the inorder successor (smallest in the right subtree)</span>
+            <span class="s4">struct </span><span class="s1">Node* temp = minValueNode(root-&gt;right);</span>
+
+            <span class="s0">// Copy the inorder successor's data to this node</span>
+            <span class="s1">root-&gt;key = temp-&gt;key;</span>
+
+            <span class="s0">// Delete the inorder successor</span>
+            <span class="s1">root-&gt;right = deleteNode(root-&gt;right, temp-&gt;key);</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s0">// If the tree had only one node then return</span>
+    <span class="s4">if </span><span class="s1">(root == NULL)</span>
+        <span class="s4">return </span><span class="s1">root;</span>
+
+    <span class="s0">// STEP 2: UPDATE HEIGHT OF THE CURRENT NODE</span>
+    <span class="s1">root-&gt;height = </span><span class="s5">1 </span><span class="s1">+ max(height(root-&gt;left),height(root-&gt;right));</span>
+
+    <span class="s0">// STEP 3: GET THE BALANCE FACTOR OF THIS NODE (to check whether this node became unbalanced)</span>
+    <span class="s4">int </span><span class="s1">balance = getBalance(root);</span>
+
+    <span class="s0">// If this node becomes unbalanced, then there are 4 cases</span>
+
+    <span class="s0">// Left Left Case</span>
+    <span class="s4">if </span><span class="s1">(balance &gt; </span><span class="s5">1 </span><span class="s1">&amp;&amp; getBalance(root-&gt;left) &gt;= </span><span class="s5">0</span><span class="s1">)</span>
+        <span class="s4">return </span><span class="s1">rightRotate(root);</span>
+
+    <span class="s0">// Left Right Case</span>
+    <span class="s4">if </span><span class="s1">(balance &gt; </span><span class="s5">1 </span><span class="s1">&amp;&amp; getBalance(root-&gt;left) &lt; </span><span class="s5">0</span><span class="s1">){</span>
+        <span class="s1">root-&gt;left = leftRotate(root-&gt;left);</span>
+        <span class="s4">return </span><span class="s1">rightRotate(root);</span>
+    <span class="s1">}</span>
+
+    <span class="s0">// Right Right Case</span>
+    <span class="s4">if </span><span class="s1">(balance &lt; -</span><span class="s5">1 </span><span class="s1">&amp;&amp; getBalance(root-&gt;right) &lt;= </span><span class="s5">0</span><span class="s1">)</span>
+        <span class="s4">return </span><span class="s1">leftRotate(root);</span>
+
+    <span class="s0">// Right Left Case</span>
+    <span class="s4">if </span><span class="s1">(balance &lt; -</span><span class="s5">1 </span><span class="s1">&amp;&amp; getBalance(root-&gt;right) &gt; </span><span class="s5">0</span><span class="s1">){</span>
+        <span class="s1">root-&gt;right = rightRotate(root-&gt;right);</span>
+        <span class="s4">return </span><span class="s1">leftRotate(root);</span>
+    <span class="s1">}</span>
+
+    <span class="s4">return </span><span class="s1">root;</span>
+<span class="s1">}</span>
+
+<span class="s0">// A utility function to print preorder traversal of the tree.</span>
+<span class="s0">// The function also prints height of every node</span>
+<span class="s4">void </span><span class="s1">preOrder(</span><span class="s4">struct </span><span class="s1">Node *root){</span>
+    <span class="s4">if</span><span class="s1">(root != NULL){</span>
+        <span class="s1">printf(</span><span class="s3">&quot;%d &quot;</span><span class="s1">, root-&gt;key);</span>
+        <span class="s1">preOrder(root-&gt;left);</span>
+        <span class="s1">preOrder(root-&gt;right);</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+
+<span class="s0">/* Driver program to test above function*/</span>
+<span class="s4">int </span><span class="s1">main(){</span>
+    <span class="s4">struct </span><span class="s1">Node *root = NULL;</span>
+
+<span class="s0">/* Constructing tree given in the above figure */</span>
+    <span class="s1">root = insert(root, </span><span class="s5">9</span><span class="s1">);</span>
+    <span class="s1">root = insert(root, </span><span class="s5">5</span><span class="s1">);</span>
+    <span class="s1">root = insert(root, </span><span class="s5">10</span><span class="s1">);</span>
+    <span class="s1">root = insert(root, </span><span class="s5">0</span><span class="s1">);</span>
+    <span class="s1">root = insert(root, </span><span class="s5">6</span><span class="s1">);</span>
+    <span class="s1">root = insert(root, </span><span class="s5">11</span><span class="s1">);</span>
+    <span class="s1">root = insert(root, -</span><span class="s5">1</span><span class="s1">);</span>
+    <span class="s1">root = insert(root, </span><span class="s5">1</span><span class="s1">);</span>
+    <span class="s1">root = insert(root, </span><span class="s5">2</span><span class="s1">);</span>
+
+    <span class="s0">/* The constructed AVL Tree would be 
+            9 
+           / \ 
+          1  10 
+         / \   \ 
+        0   5  11 
+       /   / \ 
+     -1   2   6 
+    */</span>
+
+    <span class="s1">printf(</span><span class="s3">&quot;Preorder traversal of the constructed AVL &quot;</span>
+           <span class="s3">&quot;tree is </span><span class="s6">\n</span><span class="s3">&quot;</span><span class="s1">);</span>
+    <span class="s1">preOrder(root);</span>
+
+    <span class="s1">root = deleteNode(root, </span><span class="s5">10</span><span class="s1">);</span>
+
+    <span class="s0">/* The AVL Tree after deletion of 10 
+         1 
+        / \ 
+       0   9 
+      /   / \ 
+    -1   5  11 
+        / \ 
+       2   6 
+    */</span>
+
+    <span class="s1">printf(</span><span class="s3">&quot;</span><span class="s6">\n</span><span class="s3">Preorder traversal after deletion of 10 </span><span class="s6">\n</span><span class="s3">&quot;</span><span class="s1">);</span>
+    <span class="s1">preOrder(root);</span>
+
+
+    <span class="s4">return </span><span class="s5">0</span><span class="s1">;</span>
+<span class="s1">}</span>
+
+<span class="s2">#endif </span><span class="s0">//TUTORING_CODE_AVL_TREE_H</span>
+</pre>
+</body>
+</html>
